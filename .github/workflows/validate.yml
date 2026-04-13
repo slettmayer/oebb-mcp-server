@@ -1,0 +1,47 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ruff:
+    name: Ruff (lint + format)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check .
+      - run: ruff format . --check
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install hatchling && pip install -e . && pip install pytest pytest-asyncio
+      - run: pytest tests/ -v -m "not integration"
+
+  gate:
+    name: gate
+    needs: [ruff, test]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check validation results
+        run: |
+          if [[ "${{ needs.ruff.result }}" == "success" && \
+                "${{ needs.test.result }}" == "success" ]]; then
+            echo "All checks passed"
+            exit 0
+          else
+            echo "One or more checks failed"
+            exit 1
+          fi
