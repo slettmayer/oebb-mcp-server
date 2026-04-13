@@ -82,7 +82,7 @@ Fetch current OeBB service alerts and disruptions.
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `max_alerts` | int | 20 | Maximum alerts |
-| `product_filter` | int | 1023 | Product bitmask (1=ICE/RJX, 2=IC/EC, 4=NJ, 8=D/EN, 16=REX/R, 32=S-Bahn, 64=Bus, 128=Ferry, 256=U-Bahn, 512=Tram, 1023=all) |
+| `product_filter` | int | 65535 | Product bitmask (1=ICE/RJX, 2=IC/EC, 4=NJ, 8=D/EN, 16=REX/R, 32=S-Bahn, 64=Bus, 128=Ferry, 256=U-Bahn, 512=Tram, 4096=private operators like Westbahn/RegioJet, 65535=all) |
 
 ## Development
 

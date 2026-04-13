@@ -39,7 +39,7 @@ Industry: public transport / developer tooling (AI integration).
 - Key fields: `id` (e.g. "HIM_12345"), `headline`, `text`, `priority`, `start_date`, `end_date`, `from_station`, `to_station`
 
 **Product** -- Train service type, represented as a bitmask.
-- 1=ICE/RJX, 2=IC/EC, 4=NJ, 8=D/EN, 16=REX/R, 32=S-Bahn, 64=Bus, 128=Ferry, 256=U-Bahn, 512=Tram
+- 1=ICE/RJX, 2=IC/EC, 4=NJ, 8=D/EN, 16=REX/R, 32=S-Bahn, 64=Bus, 128=Ferry, 256=U-Bahn, 512=Tram, 4096=private operators (Westbahn/RegioJet)
 
 ### Feature Boundaries
 
