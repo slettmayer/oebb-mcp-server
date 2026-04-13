@@ -10,6 +10,7 @@ from typing import Any
 import aiohttp
 
 from oebb_mcp_server.const import (
+    OEBB_ALL_PRODUCTS,
     OEBB_API_ENDPOINT,
     OEBB_API_LANG,
     OEBB_API_TIMEOUT,
@@ -306,7 +307,9 @@ async def async_oebb_trip_search(
             "outTime": search_dt.strftime("%H%M%S"),
             "outFrwd": out_frwd,
             "numF": max_connections,
-            "jnyFltrL": [{"type": "PROD", "mode": "INC", "value": "1023"}],
+            "jnyFltrL": [
+                {"type": "PROD", "mode": "INC", "value": str(OEBB_ALL_PRODUCTS)},
+            ],
             "getPasslist": False,
             "getPolyline": False,
         }
@@ -451,14 +454,14 @@ def _format_oebb_date(date_str: str) -> str:
 async def async_oebb_service_alerts(
     session: aiohttp.ClientSession,
     max_alerts: int = 20,
-    product_filter: int = 1023,
+    product_filter: int = OEBB_ALL_PRODUCTS,
 ) -> dict[str, Any]:
     """Fetch current OeBB service alerts and disruptions.
 
     Returns a dict with alerts_count and alerts list.
     product_filter is a bitmask (1=ICE/RJX, 2=IC/EC, 4=NJ, 8=D/EN,
     16=REX/R, 32=S-Bahn, 64=Bus, 128=Ferry, 256=U-Bahn, 512=Tram,
-    1023=all).
+    4096=private operators like Westbahn/RegioJet, 65535=all).
     Returns a dict with just 'message' on error.
     """
     try:

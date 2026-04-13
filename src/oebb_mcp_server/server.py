@@ -8,6 +8,7 @@ from typing import Any
 import aiohttp
 from mcp.server.fastmcp import FastMCP
 
+from oebb_mcp_server.const import OEBB_ALL_PRODUCTS
 from oebb_mcp_server.oebb_api import (
     async_oebb_search_station,
     async_oebb_service_alerts,
@@ -117,7 +118,7 @@ async def trip_search(
 @mcp.tool()
 async def service_alerts(
     max_alerts: int = 20,
-    product_filter: int = 1023,
+    product_filter: int = OEBB_ALL_PRODUCTS,
 ) -> str:
     """Fetch current OeBB service alerts and disruptions.
 
@@ -127,7 +128,8 @@ async def service_alerts(
     Args:
         max_alerts: Maximum number of alerts to return (default 20)
         product_filter: Product bitmask — 1=ICE/RJX, 2=IC/EC, 4=NJ,
-            8=D/EN, 16=REX/R, 32=S-Bahn, 64=Bus, 1023=all
+            8=D/EN, 16=REX/R, 32=S-Bahn, 64=Bus,
+            4096=private operators (Westbahn/RegioJet), 65535=all
     """
     async with aiohttp.ClientSession() as session:
         result = await async_oebb_service_alerts(session, max_alerts, product_filter)
