@@ -1,21 +1,57 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
 name = "oebb-mcp-server"
-version = "0.1.0"
+dynamic = ["version"]
 description = "MCP server for OeBB (Austrian Federal Railways) train data"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12"
+authors = [{ name = "Stefan Lettmayer" }]
+keywords = [
+    "mcp",
+    "model-context-protocol",
+    "oebb",
+    "austria",
+    "railway",
+    "train",
+    "hafas",
+    "scotty",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 dependencies = [
     "mcp[cli]>=1.0.0",
     "aiohttp>=3.0.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/slettmayer/oebb-mcp-server"
+Repository = "https://github.com/slettmayer/oebb-mcp-server"
+Issues = "https://github.com/slettmayer/oebb-mcp-server/issues"
+Changelog = "https://github.com/slettmayer/oebb-mcp-server/blob/main/CHANGELOG.md"
+
 [project.scripts]
 oebb-mcp-server = "oebb_mcp_server.server:main"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/oebb_mcp_server/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/oebb_mcp_server"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
