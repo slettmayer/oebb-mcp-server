@@ -1,5 +1,11 @@
 # oebb-mcp-server
 
+<!-- mcp-name: io.github.slettmayer/oebb-mcp-server -->
+
+[![PyPI](https://img.shields.io/pypi/v/oebb-mcp-server.svg)](https://pypi.org/project/oebb-mcp-server/)
+[![Python](https://img.shields.io/pypi/pyversions/oebb-mcp-server.svg)](https://pypi.org/project/oebb-mcp-server/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 MCP server for [OeBB](https://www.oebb.at) (Austrian Federal Railways) train data. Query Austrian train stations, departures, connections, and service alerts directly from LLMs via the [Model Context Protocol](https://modelcontextprotocol.io).
 
 ## Installation

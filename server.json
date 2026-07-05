@@ -1,0 +1,22 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.slettmayer/oebb-mcp-server",
+  "title": "OeBB (Austrian Railways)",
+  "description": "OeBB (Austrian Railways) train data: stations, departures, connections, service alerts.",
+  "websiteUrl": "https://github.com/slettmayer/oebb-mcp-server",
+  "repository": {
+    "url": "https://github.com/slettmayer/oebb-mcp-server",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "oebb-mcp-server",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
