@@ -3,16 +3,18 @@ name: Auto Release (Dependabot)
 on:
   pull_request:
     types: [closed]
+  workflow_dispatch: {} # manual "cut the next patch release" trigger
 
 jobs:
   tag:
-    # Only merged Dependabot PRs from the uv (Python dependency) ecosystem —
-    # those change the published package. github-actions bumps do not, so they
-    # merge without cutting a release.
+    # Runs for a manual dispatch, or for a merged Dependabot PR from the uv
+    # (Python dependency) ecosystem — those change the published package.
+    # github-actions bumps do not, so they merge without cutting a release.
     if: >-
-      github.event.pull_request.merged == true &&
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged == true &&
       github.event.pull_request.user.login == 'dependabot[bot]' &&
-      startsWith(github.event.pull_request.head.ref, 'dependabot/uv/')
+      startsWith(github.event.pull_request.head.ref, 'dependabot/uv/'))
     runs-on: ubuntu-latest
     steps:
       - name: Generate GitHub App token
@@ -38,9 +40,9 @@ jobs:
       - name: Create and push tag
         env:
           NEXT: ${{ steps.ver.outputs.next }}
-          PR: ${{ github.event.pull_request.number }}
+          REASON: ${{ github.event_name == 'workflow_dispatch' && 'manual dispatch' || format('Dependabot #{0}', github.event.pull_request.number) }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "$NEXT" -m "Automated release $NEXT (Dependabot #$PR)"
+          git tag -a "$NEXT" -m "Automated release $NEXT ($REASON)"
           git push origin "$NEXT"
