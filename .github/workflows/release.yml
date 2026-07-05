@@ -9,10 +9,10 @@ jobs:
     name: Build distributions
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # hatch-vcs needs full history + tags to derive the version
-      - uses: astral-sh/setup-uv@v8
+      - uses: astral-sh/setup-uv@v8.3.0
         with:
           python-version: "3.12"
       - name: Build sdist and wheel
@@ -74,7 +74,7 @@ jobs:
       id-token: write # OIDC proves ownership of the io.github.<owner> namespace
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set server.json version from tag
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
