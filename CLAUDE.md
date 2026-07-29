@@ -8,6 +8,7 @@
 - **Test (integration, real API)**: `pytest tests/ -v -m integration`
 - **Run server**: `uvx --from . oebb-mcp-server` or `python -m oebb_mcp_server.server`
 - **Validate (CI)**: Ruff + pytest unit tests (all must pass via `gate` job)
+- **Release**: run the Auto Release workflow; the version comes from the git tag -- see [Releasing](docs/tech/RELEASING.md)
 
 ## Architecture Overview
 Thin adapter: MCP presentation layer wrapping a pure async OeBB API client. Purely functional, no classes. All code in `src/oebb_mcp_server/`.
