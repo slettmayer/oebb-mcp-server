@@ -31,7 +31,9 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "mcp[cli]>=1.28.1",
+    # Upper bound: mcp 2.0.0 reworked the SDK and removed `mcp.server.fastmcp`.
+    # Keep on the v1 line until server.py is migrated to `mcp.server.MCPServer`.
+    "mcp[cli]>=1.28.1,<2",
     "aiohttp>=3.0.0",
 ]
 

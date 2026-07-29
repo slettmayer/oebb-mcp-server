@@ -25,11 +25,14 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # hatch-vcs derives the version from git history + tags
-      - uses: actions/setup-python@v6
+      - uses: astral-sh/setup-uv@v8.3.2
         with:
           python-version: "3.12"
-      - run: pip install hatchling && pip install -e . && pip install pytest pytest-asyncio
-      - run: pytest tests/ -v -m "not integration"
+          enable-cache: true
+      # --locked installs the committed uv.lock exactly and fails if it has
+      # drifted from pyproject.toml, so dependency bumps are actually tested.
+      - run: uv sync --locked
+      - run: uv run pytest tests/ -v -m "not integration"
 
   gate:
     name: gate
