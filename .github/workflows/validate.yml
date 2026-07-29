@@ -11,12 +11,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: astral-sh/setup-uv@v9.0.0
         with:
           python-version: "3.12"
-      - run: pip install ruff
-      - run: ruff check .
-      - run: ruff format . --check
+          enable-cache: true
+      # ruff comes from the dev group in the committed uv.lock, so CI lints with
+      # the exact version used locally. `pip install ruff` was unpinned, meaning
+      # a ruff release could fail the build without any change to this repo.
+      # --only-group keeps the project itself out of the env (linting does not
+      # need it installed); --no-sync then stops `uv run` from putting it back,
+      # which would build via hatch-vcs and so need the full git history.
+      - run: uv sync --locked --only-group dev
+      - run: uv run --no-sync ruff check .
+      - run: uv run --no-sync ruff format . --check
 
   test:
     name: Tests

@@ -21,7 +21,7 @@ Documents the languages, frameworks, build tools, and key libraries used in this
 - `from __future__ import annotations` required in every file
 
 ### Framework
-- **FastMCP** (`mcp[cli]`) -- MCP server framework. Exposes Python async functions as Model Context Protocol tools over stdio transport. Tools registered via `@mcp.tool()` decorator. The framework handles MCP protocol serialization, tool schema generation from type hints/docstrings, and transport lifecycle.
+- **MCPServer** (`mcp[cli]`, the Python SDK's high-level server API) -- exposes Python async functions as Model Context Protocol tools over stdio transport. Tools registered via `@mcp.tool()` decorator. The framework handles MCP protocol serialization, tool schema generation from type hints/docstrings, and transport lifecycle. `@mcp.tool()` returns the plain undecorated function, so tools stay directly callable/testable.
 
 ### Build and Environment
 - **Hatchling** -- PEP 517 build backend declared in `pyproject.toml`
@@ -55,11 +55,13 @@ Documents the languages, frameworks, build tools, and key libraries used in this
 No Docker, Kubernetes, Terraform, or cloud platform configuration. Distributed as a PyPI package, run locally via `uvx`.
 
 ## Dependencies
-- Runtime: `mcp[cli]>=1.28.1,<2`, `aiohttp>=3.0.0`
-- The `mcp` upper bound is deliberate: **mcp 2.0.0** (2026-07-28) reworked the SDK and removed
-  `mcp.server.fastmcp`, which `server.py` imports. Do not relax it until the server is migrated to
-  `mcp.server.MCPServer` -- see the [migration guide](https://py.sdk.modelcontextprotocol.io/migration/).
-- Dev: `ruff`, `pytest`, `pytest-asyncio`
+- Runtime: `mcp[cli]>=2,<3`, `aiohttp>=3.0.0`
+- The `mcp` major is bounded (`<3`) because the SDK breaks its high-level server API across majors:
+  **mcp 2.0.0** (2026-07-28) removed `mcp.server.fastmcp` and replaced `FastMCP` with
+  `mcp.server.MCPServer`. Bump the bound deliberately, not via Dependabot -- see the
+  [migration guide](https://py.sdk.modelcontextprotocol.io/migration/).
+- Dev: `ruff`, `pytest`, `pytest-asyncio` -- all in the `dev` group and pinned by `uv.lock`, so CI lints
+  and tests with the same versions used locally
 - External: OeBB Scotty API (HAFAS)
 
 ## Design Decisions

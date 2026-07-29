@@ -17,13 +17,13 @@ Documents the project structure, module boundaries, layering, and data flow.
 ## Overview
 
 ### Architectural Pattern
-Thin adapter: a FastMCP presentation layer wrapping a pure async HTTP client. Purely functional -- no classes outside the `FastMCP` instance. Data flows as plain `dict[str, Any]` throughout; no domain model objects.
+Thin adapter: an MCP presentation layer wrapping a pure async HTTP client. Purely functional -- no classes outside the `MCPServer` instance. Data flows as plain `dict[str, Any]` throughout; no domain model objects.
 
 ### Project Structure
 ```
 src/oebb_mcp_server/
   __init__.py          -- version string only
-  server.py            -- FastMCP tool registration, session lifecycle, entry point
+  server.py            -- MCPServer tool registration, session lifecycle, entry point
   oebb_api.py          -- pure async HTTP client (independently testable)
   const.py             -- all constants (endpoint, auth, config)
 tests/
@@ -54,7 +54,7 @@ One module per responsibility. No sub-packages.
 ```
 LLM client
   -> stdio transport
-    -> FastMCP framework (server.py)
+    -> MCPServer framework (server.py)
       -> @mcp.tool() handler creates aiohttp.ClientSession
         -> async_oebb_*() in oebb_api.py
           -> POST JSON to OeBB Scotty mgate.exe
