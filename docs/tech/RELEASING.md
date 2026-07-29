@@ -65,8 +65,14 @@ Two non-obvious constraints are pinned by tests — don't regress them:
 - the author filter is `dependabot`, **not** `dependabot[bot]`, because `git log --author=` takes a regex
   where `[bot]` is a character class that matches no commit at all
 
-## If `main` becomes protected
+## `main` is protected by a ruleset
 
-The release workflow pushes a commit directly to `main`. `main` is unprotected today. If branch protection
-is added, the GitHub App used by `auto-release.yml` needs bypass permission, or releases will start failing
-at step 3.
+`main` has an **active repository ruleset** requiring changes to go through a pull request and the `gate`
+check to pass. Note this is a *ruleset*, not classic branch protection: the classic
+`/repos/{owner}/{repo}/branches/main/protection` endpoint returns 404 here, which makes it easy to conclude
+the branch is unprotected. Check `/repos/{owner}/{repo}/rulesets` instead.
+
+The ruleset targets **branches only**, so pushing a `v*` **tag** is unaffected — only the changelog commit
+in step 3 needs write access to `main`. The GitHub App used by `auto-release.yml` is therefore listed as a
+**bypass actor** on that ruleset. If releases start failing with `GH013: Repository rule violations`, that
+bypass entry has been removed or the App changed.
