@@ -6,8 +6,9 @@ import json
 from typing import Any
 
 import aiohttp
-from mcp.server.fastmcp import FastMCP
+from mcp.server import MCPServer
 
+from oebb_mcp_server import __version__
 from oebb_mcp_server.const import OEBB_ALL_PRODUCTS
 from oebb_mcp_server.oebb_api import (
     async_oebb_search_station,
@@ -16,8 +17,11 @@ from oebb_mcp_server.oebb_api import (
     async_oebb_trip_search,
 )
 
-mcp = FastMCP(
+mcp = MCPServer(
     "oebb",
+    # v2 advertises this verbatim and defaults it to "" (v1 had no such
+    # parameter and reported the SDK's own version instead).
+    version=__version__,
     instructions=(
         "OeBB (Austrian Federal Railways) train data server. "
         "Use search_station to find station IDs, station_board for "

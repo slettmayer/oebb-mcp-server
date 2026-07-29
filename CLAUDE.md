@@ -10,9 +10,9 @@
 - **Validate (CI)**: Ruff + pytest unit tests (all must pass via `gate` job)
 
 ## Architecture Overview
-Thin adapter: FastMCP presentation layer wrapping a pure async OeBB API client. Purely functional, no classes. All code in `src/oebb_mcp_server/`.
+Thin adapter: MCP presentation layer wrapping a pure async OeBB API client. Purely functional, no classes. All code in `src/oebb_mcp_server/`.
 
-- `server.py` -- FastMCP tool registration, session lifecycle, stdio entry point
+- `server.py` -- MCPServer tool registration, session lifecycle, stdio entry point
 - `oebb_api.py` -- pure async HTTP client for OeBB Scotty API (independently testable)
 - `const.py` -- all constants (endpoint, auth, client config)
 
@@ -22,7 +22,7 @@ See [Architecture](docs/tech/ARCHITECTURE.md) for module boundaries and data flo
 
 ## Tech Stack
 - Python 3.12+, `from __future__ import annotations` in every file
-- `mcp[cli]` (FastMCP) for MCP server framework
+- `mcp[cli]` (`mcp.server.MCPServer`) for MCP server framework -- v2 line, pinned `>=2,<3`
 - `aiohttp` for async HTTP
 - `ruff` for linting/formatting, `pytest` + `pytest-asyncio` for testing
 - `uv` for environment management, `hatchling` build backend
