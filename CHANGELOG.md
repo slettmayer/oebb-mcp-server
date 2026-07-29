@@ -1,8 +1,9 @@
 # Changelog
 
 The version of a release is derived from its git tag by `hatch-vcs`; there is no version string in the
-source tree. Add entries under `## Unreleased` as you go, and rename that heading to the version being cut
-as part of the release commit.
+source tree. Add entries under `## Unreleased` as you go — the release workflow moves them under the
+version being cut, so you never rename that heading by hand. See
+[docs/tech/RELEASING.md](docs/tech/RELEASING.md).
 
 ## Unreleased
 
