@@ -3,7 +3,12 @@ name: Auto Release (Dependabot)
 on:
   pull_request:
     types: [closed]
-  workflow_dispatch: {} # manual "cut the next patch release" trigger
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release, e.g. v0.3.0. Leave empty to bump the patch.'
+        required: false
+        type: string
 
 jobs:
   tag:
@@ -28,21 +33,58 @@ jobs:
           ref: main
           fetch-depth: 0 # need all tags + the merge commit
           token: ${{ steps.app-token.outputs.token }}
-      - name: Compute next patch version
+      - name: Resolve release version
         id: ver
+        env:
+          REQUESTED: ${{ inputs.version }}
         run: |
-          latest=$(git tag -l 'v*' --sort=-v:refname | head -n1)
-          latest=${latest:-v0.0.0}
-          IFS=. read -r major minor patch <<< "${latest#v}"
-          next="v${major}.${minor}.$((patch + 1))"
+          if [ -n "$REQUESTED" ]; then
+            if ! printf '%s' "$REQUESTED" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+              echo "::error::version input '$REQUESTED' must look like v1.2.3"
+              exit 1
+            fi
+            next="$REQUESTED"
+            echo "Releasing requested version: $next"
+          else
+            latest=$(git tag -l 'v*' --sort=-v:refname | head -n1)
+            latest=${latest:-v0.0.0}
+            IFS=. read -r major minor patch <<< "${latest#v}"
+            next="v${major}.${minor}.$((patch + 1))"
+            echo "Releasing next patch: $next (from ${latest})"
+          fi
+          if git rev-parse -q --verify "refs/tags/$next" >/dev/null; then
+            echo "::error::tag $next already exists"
+            exit 1
+          fi
           echo "next=$next" >> "$GITHUB_OUTPUT"
-          echo "Next release: $next (from ${latest})"
-      - name: Create and push tag
+
+      # Files the release section under the version being cut, so no published
+      # version can end up without one. Stdlib-only, so no project install.
+      - name: Prepare CHANGELOG
+        env:
+          NEXT: ${{ steps.ver.outputs.next }}
+        run: python3 scripts/changelog_release.py --version "$NEXT"
+
+      - name: Commit, tag and push
         env:
           NEXT: ${{ steps.ver.outputs.next }}
           REASON: ${{ github.event_name == 'workflow_dispatch' && 'manual dispatch' || format('Dependabot PR {0}', github.event.pull_request.number) }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # The script is a no-op when the section already exists (a human may
+          # have written it in the release PR), and committing nothing would
+          # fail and abort an otherwise valid release.
+          if git diff --quiet -- CHANGELOG.md; then
+            echo "CHANGELOG.md already had a $NEXT section; nothing to commit."
+          else
+            git add CHANGELOG.md
+            git commit -m "docs: changelog for $NEXT ($REASON)"
+            git push origin HEAD:main
+          fi
+
+          # Tag AFTER the commit so the tagged tree contains its own changelog
+          # section; tagging first would ship every release without one.
           git tag -a "$NEXT" -m "Automated release $NEXT ($REASON)"
           git push origin "$NEXT"

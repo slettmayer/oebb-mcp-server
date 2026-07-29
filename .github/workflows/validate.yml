@@ -41,6 +41,32 @@ jobs:
       - run: uv sync --locked
       - run: uv run pytest tests/ -v -m "not integration"
 
+  # Advisory only. Deliberately absent from `gate`'s needs so it can never block
+  # a merge — the goal is to surface a forgotten entry while it is still cheap to
+  # add, not to add ceremony to dependency bumps or docs-only PRs.
+  changelog:
+    name: Changelog reminder
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.user.login != 'dependabot[bot]' &&
+      !contains(github.event.pull_request.labels.*.name, 'no-changelog')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # need the base ref to diff against
+      - name: Warn when src changed without a changelog entry
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          changed=$(git diff --name-only "$BASE" "$HEAD")
+          if grep -q '^src/' <<< "$changed" && ! grep -qx 'CHANGELOG.md' <<< "$changed"; then
+            echo "::warning::This PR changes src/ but not CHANGELOG.md. Add an entry under '## Unreleased', or label the PR 'no-changelog'."
+          else
+            echo "Changelog check satisfied."
+          fi
+
   gate:
     name: gate
     needs: [ruff, test]

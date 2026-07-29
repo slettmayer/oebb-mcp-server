@@ -7,3 +7,4 @@ Index of technical documentation files for AI-assisted development.
 - [Architecture](ARCHITECTURE.md) -- project structure, layering, module boundaries, data flow
 - [Conventions](CONVENTIONS.md) -- naming, code style, error handling, import patterns
 - [Testing](TESTING.md) -- test frameworks, patterns, conventions, commands
+- [Releasing](RELEASING.md) -- how versions are tagged and published, and where changelog entries go
