@@ -19,8 +19,20 @@ Documents the test structure, patterns, tooling, and conventions used in the pro
 ```
 tests/
   test_oebb_api.py              -- unit tests (mocked HTTP, runs in CI)
+  test_server_json.py           -- MCP Registry publish constraints (runs in CI)
   test_oebb_api_integration.py  -- integration tests (real OeBB API, CI-excluded)
 ```
+
+### Release-metadata tests
+`test_server_json.py` checks `server.json` against constraints the MCP Registry only enforces at publish
+time -- description length (<=100), package identifier matching `pyproject.toml`, transport and registry
+type, the OIDC namespace, and the `mcp-name:` ownership marker in the README.
+
+That timing is the point. The registry validates *after* the PyPI upload has succeeded and the tag is
+pushed, and the failed job cannot be re-run (the workflow checks out the tag) nor the tag moved (PyPI
+rejects a re-upload, failing the job the registry step needs). Every rejection therefore costs a version
+number -- the sibling `calc-mcp-server` burned two that way on 2026-07-30. These tests move both checks
+into CI, minutes before a release rather than during one.
 
 ### Test File Naming
 - Unit tests: `test_<module>.py`

@@ -7,6 +7,16 @@ version being cut, so you never rename that heading by hand. See
 
 ## Unreleased
 
+- Added: `tests/test_server_json.py` validates `server.json` against the MCP Registry's publish
+  constraints -- description length, package identifier, transport, OIDC namespace, and the `mcp-name:`
+  ownership marker in the README. The registry only validates at publish time, after the PyPI upload has
+  succeeded and the tag is immovable, so a rejection there cannot be re-run and costs a version number;
+  the sibling `calc-mcp-server` burned two that way. This repo already satisfies every check -- the tests
+  stop a future edit crossing the cap.
+- Added: `.python-version` pinning local development to 3.12, the version CI installs. Without it `uv`
+  picks the newest interpreter present, so local and CI silently diverge -- stdlib `math` error messages
+  were reworded after 3.12, so a test asserting on them passes locally and fails in CI.
+
 - Fixed: `docs/tech/RELEASING.md` claimed `main` was unprotected. It is protected by an active repository ruleset; the earlier check used the classic branch-protection API, which returns 404 here and reads as "not protected". The release App is now a ruleset bypass actor, without which the changelog push fails `GH013`.
 
 ## 0.2.1 - 2026-07-29

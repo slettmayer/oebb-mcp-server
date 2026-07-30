@@ -18,6 +18,9 @@ Documents the languages, frameworks, build tools, and key libraries used in this
 
 ### Language
 - Python 3.12+ -- `requires-python = ">=3.12"` in `pyproject.toml`
+- `.python-version` pins local development to 3.12, the version CI installs. Without it `uv` picks the
+  newest interpreter on the machine, so local and CI diverge silently -- stdlib `math` error messages
+  were reworded after 3.12, for instance, so a test asserting on them passes locally and fails in CI
 - `from __future__ import annotations` required in every file
 
 ### Framework
