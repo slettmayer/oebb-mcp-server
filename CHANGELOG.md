@@ -18,6 +18,10 @@ version being cut, so you never rename that heading by hand. See
   were reworded after 3.12, so a test asserting on them passes locally and fails in CI.
 
 - Fixed: `docs/tech/RELEASING.md` claimed `main` was unprotected. It is protected by an active repository ruleset; the earlier check used the classic branch-protection API, which returns 404 here and reads as "not protected". The release App is now a ruleset bypass actor, without which the changelog push fails `GH013`.
+- Changed: `auto-release.yml` now passes `client-id` to `actions/create-github-app-token` instead of the
+  deprecated `app-id`, reading a new `GH_ACTION_APP_CLIENT_ID` secret. Every run warned
+  `Input 'app-id' has been deprecated`; the token it mints is what pushes the changelog commit past the
+  `main` ruleset, so the input will not be left to be removed on the action's schedule.
 
 ## 0.2.1 - 2026-07-29
 
