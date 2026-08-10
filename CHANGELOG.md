@@ -7,6 +7,8 @@ version being cut, so you never rename that heading by hand. See
 
 ## Unreleased
 
+## 0.2.2 - 2026-08-10
+
 - Added: `tests/test_server_json.py` validates `server.json` against the MCP Registry's publish
   constraints -- description length, package identifier, transport, OIDC namespace, and the `mcp-name:`
   ownership marker in the README. The registry only validates at publish time, after the PyPI upload has
@@ -22,6 +24,7 @@ version being cut, so you never rename that heading by hand. See
   deprecated `app-id`, reading a new `GH_ACTION_APP_CLIENT_ID` secret. Every run warned
   `Input 'app-id' has been deprecated`; the token it mints is what pushes the changelog commit past the
   `main` ruleset, so the input will not be left to be removed on the action's schedule.
+- Build: bump ruff in the python-dependencies group.
 
 ## 0.2.1 - 2026-07-29
 
