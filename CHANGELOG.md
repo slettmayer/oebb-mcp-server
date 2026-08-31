@@ -7,6 +7,11 @@ version being cut, so you never rename that heading by hand. See
 
 ## Unreleased
 
+## 0.2.5 - 2026-08-31
+
+- Build: bump ruff in the python-dependencies group.
+- Build: bump astral-sh/setup-uv in the github-actions group.
+
 ## 0.2.4 - 2026-08-23
 
 - Build: bump ruff in the python-dependencies group.
