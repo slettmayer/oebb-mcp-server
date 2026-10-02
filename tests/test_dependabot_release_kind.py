@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from dependabot_release_kind import main, release_kind
+from dependabot_release_kind import admitted_majors, main, release_kind
 
 
 def _pyproject(dependencies: list[str], dev: list[str] | None = None) -> str:
@@ -51,6 +51,50 @@ def test_floor_raised_within_the_major_is_a_patch() -> None:
 )
 def test_crossing_a_major_is_a_minor(mcp: str) -> None:
     assert release_kind(BASE, _pyproject([mcp, "aiohttp>=3.0.0"])) == "minor"
+
+
+@pytest.mark.parametrize(
+    "mcp",
+    [
+        "mcp[cli]>=2,<3.1",  # admits 3.0 although no bound names a new major
+        "mcp[cli]>=2,<=3",  # an inclusive bound at 3 admits 3.0
+    ],
+)
+def test_a_range_admitting_a_new_major_is_a_minor(mcp: str) -> None:
+    assert release_kind(BASE, _pyproject([mcp, "aiohttp>=3.0.0"])) == "minor"
+
+
+def test_narrowing_within_the_major_is_a_patch() -> None:
+    # `<2.9` names a different number than `<3`, but both admit only major 2.
+    after = _pyproject(["mcp[cli]>=2,<2.9", "aiohttp>=3.0.0"])
+    assert release_kind(BASE, after) == "patch"
+
+
+def test_entries_differing_only_by_marker_are_compared_separately() -> None:
+    before = _pyproject(
+        ["foo>=2; sys_platform == 'win32'", "foo>=2; sys_platform == 'linux'"]
+    )
+    after = _pyproject(
+        ["foo>=2.1; sys_platform == 'win32'", "foo>=2; sys_platform == 'linux'"]
+    )
+    # A dict keyed by name alone keeps only the linux entry and reports `none`.
+    assert release_kind(before, after) == "patch"
+
+
+@pytest.mark.parametrize(
+    ("specifier", "majors"),
+    [
+        (">=2,<3", (2, 2)),
+        (">=3.0.0", (3, None)),
+        ("==2.*", (2, 2)),
+        ("~=2.1", (2, 2)),
+        (">3", (3, None)),
+        ("==1.4.2", (1, 1)),
+        (">=3,<3", None),
+    ],
+)
+def test_admitted_majors(specifier: str, majors) -> None:
+    assert admitted_majors(specifier.split(",")) == majors
 
 
 def test_added_dependency_is_a_minor() -> None:
