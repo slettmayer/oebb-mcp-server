@@ -1,0 +1,33 @@
+name: Dependabot Auto-merge
+
+# Dependabot's PRs merge themselves once `gate` passes; one that fails it stays
+# open for a human. Merging never publishes by itself: auto-release.yml then
+# releases only if the PR changed the package's runtime dependencies (see
+# docs/tech/RELEASING.md#what-dependabot-triggers).
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions: {}
+
+jobs:
+  auto-merge:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.GH_ACTION_APP_CLIENT_ID }}
+          private-key: ${{ secrets.GH_ACTION_APP_PRIVATE_KEY }}
+
+      # The App token, not GITHUB_TOKEN: a merge made with GITHUB_TOKEN
+      # triggers no workflows, so neither Validate on main nor
+      # auto-release.yml would run after it.
+      - name: Enable auto-merge
+        run: gh pr merge --auto --squash "${PR_URL}"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
