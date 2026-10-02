@@ -13,8 +13,10 @@ on:
 jobs:
   tag:
     # Runs for a manual dispatch, or for a merged Dependabot PR from the uv
-    # (Python dependency) ecosystem — those change the published package.
-    # github-actions bumps do not, so they merge without cutting a release.
+    # (Python dependency) ecosystem. github-actions bumps never change the
+    # published package, so they merge without even starting this job. A uv
+    # PR releases only if the "Classify" step below finds it changed what a
+    # wheel declares.
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.pull_request.merged == true &&
@@ -33,10 +35,34 @@ jobs:
           ref: main
           fetch-depth: 0 # need all tags + the merge commit
           token: ${{ steps.app-token.outputs.token }}
+
+      # Dependabot's uv PRs usually touch uv.lock alone, and the lock is not in
+      # the wheel: its dependency metadata comes from [project] in
+      # pyproject.toml. So compare that across the squash merge; a lock-only or
+      # dev-group bump would publish an identical package under a new version.
+      # A dependency crossing a major version gets a minor release, since it
+      # changes what consumers resolve. Stdlib-only, so no project install.
+      - name: Classify the Dependabot change
+        id: kind
+        if: github.event_name == 'pull_request'
+        env:
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          git show "${MERGE_SHA}^:pyproject.toml" > "${RUNNER_TEMP}/before.toml"
+          git show "${MERGE_SHA}:pyproject.toml" > "${RUNNER_TEMP}/after.toml"
+          kind=$(python3 scripts/dependabot_release_kind.py \
+            "${RUNNER_TEMP}/before.toml" "${RUNNER_TEMP}/after.toml")
+          if [ "$kind" = none ]; then
+            echo "::notice::Runtime dependencies unchanged; merged without a release."
+          fi
+          echo "kind=${kind}" >> "$GITHUB_OUTPUT"
+
       - name: Resolve release version
         id: ver
+        if: steps.kind.outputs.kind != 'none'
         env:
           REQUESTED: ${{ inputs.version }}
+          KIND: ${{ steps.kind.outputs.kind }}
         run: |
           if [ -n "$REQUESTED" ]; then
             if ! printf '%s' "$REQUESTED" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
@@ -49,8 +75,13 @@ jobs:
             latest=$(git tag -l 'v*' --sort=-v:refname | head -n1)
             latest=${latest:-v0.0.0}
             IFS=. read -r major minor patch <<< "${latest#v}"
-            next="v${major}.${minor}.$((patch + 1))"
-            echo "Releasing next patch: $next (from ${latest})"
+            if [ "$KIND" = minor ]; then
+              next="v${major}.$((minor + 1)).0"
+              echo "Releasing next minor: $next (from ${latest})"
+            else
+              next="v${major}.${minor}.$((patch + 1))"
+              echo "Releasing next patch: $next (from ${latest})"
+            fi
           fi
           if git rev-parse -q --verify "refs/tags/$next" >/dev/null; then
             echo "::error::tag $next already exists"
@@ -61,11 +92,13 @@ jobs:
       # Files the release section under the version being cut, so no published
       # version can end up without one. Stdlib-only, so no project install.
       - name: Prepare CHANGELOG
+        if: steps.kind.outputs.kind != 'none'
         env:
           NEXT: ${{ steps.ver.outputs.next }}
         run: python3 scripts/changelog_release.py --version "$NEXT"
 
       - name: Commit, tag and push
+        if: steps.kind.outputs.kind != 'none'
         env:
           NEXT: ${{ steps.ver.outputs.next }}
           REASON: ${{ github.event_name == 'workflow_dispatch' && 'manual dispatch' || format('Dependabot PR {0}', github.event.pull_request.number) }}
