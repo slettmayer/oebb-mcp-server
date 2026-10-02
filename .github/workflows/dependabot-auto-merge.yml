@@ -22,9 +22,9 @@ jobs:
         with:
           client-id: ${{ secrets.GH_ACTION_APP_CLIENT_ID }}
           private-key: ${{ secrets.GH_ACTION_APP_PRIVATE_KEY }}
-          # Just what enabling auto-merge needs, not the App's full grant.
-          permission-contents: write
-          permission-pull-requests: write
+          # No permission-* narrowing: requesting a permission the installation
+          # has not been granted makes token creation fail outright, which
+          # silently stops every auto-merge. The token gets the App's grant.
 
       # The App token, not GITHUB_TOKEN: a merge made with GITHUB_TOKEN
       # triggers no workflows, so neither Validate on main nor
