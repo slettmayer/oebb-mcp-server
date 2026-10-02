@@ -47,8 +47,27 @@ a placeholder and does not need updating.
 
 ## What Dependabot triggers
 
-Merging a Dependabot PR from the **`uv`** ecosystem (`dependabot/uv/*`) auto-cuts a patch release — those
-change the published package. **`github-actions`** bumps do not; they merge without releasing.
+Merging a Dependabot PR releases **only if it changed what users install**. The *Classify* step in
+`auto-release.yml` runs `scripts/dependabot_release_kind.py` on `pyproject.toml` before and after the
+squash merge, and compares the runtime requirements — `[project].dependencies` and
+`optional-dependencies`:
+
+- **unchanged → no release.** The usual case: a `uv` PR that touches `uv.lock` alone, or only the `dev`
+  group (ruff, pytest). The lock is not part of the wheel, so a release would publish an identical package
+  under a new version.
+- **a range moved within its major versions → patch release**
+- **a dependency added, removed, or crossing a major version → minor release**, since it changes what
+  consumers resolve
+
+`github-actions` bumps never start the job. A bump merged without a release ships with the next one, and
+`changelog_release.py` lists it there as a `- Build:` line.
+
+Every Dependabot PR also **merges itself**: `dependabot-auto-merge.yml` enables squash auto-merge, and the
+PR lands once `gate` passes; one that fails `gate` stays open for a human. It uses the GitHub App token
+rather than `GITHUB_TOKEN`, because a `GITHUB_TOKEN` merge triggers no workflows and `auto-release.yml`
+would never see it. The ruleset requires an up-to-date branch and auto-merge never updates one, so the
+`uv` and `github-actions` ecosystems run on different days (Monday, Thursday); a PR left behind by a
+feature merge needs `gh pr update-branch <n>` (see Gotchas).
 
 This automation is why `CHANGELOG.md` once drifted: it tagged releases without touching the changelog, so
 0.1.2 and 0.1.3 were published with no section. Step 2 above is what closes that.
